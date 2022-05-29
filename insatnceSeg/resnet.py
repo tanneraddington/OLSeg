@@ -14,8 +14,6 @@ from torch.autograd import Variable
 
 import pytorch_utils
 
-import utils
-
 class Bottleneck(nn.Module):
     """
     This is the bottleneck class. Used as teh block for resnet.
@@ -76,15 +74,26 @@ class Bottleneck(nn.Module):
         output = self.relu(output)
         return output
 
-class ResNet(nn.Module):
+class Resnet(nn.Module):
     """
     This is the resnet class. It wraps the layers defined in Bottleneck
     """
     def __init__(self, arch, stage5=False):
-        super(ResNet,self).__init__()
+        super(Resnet,self).__init__()
         assert arch in ["resnet50", "resnet101"]
         self.inplanes = 64
         # determine the number of layers for resnet
         l3 = {"resnet50": 6, "resnet101": 23}[arch]
         self.layers = [3,4,l3,3]
         self.block = Bottleneck
+        self.stage5 = stage5
+
+        #create the sequential layers
+        conv_seq = nn.Conv2d(3,64,kernel_size=7, stride=2, padding=3)
+        b_norm_seq = nn.BatchNorm2d(64,eps= 0.001, momentum= 0.01)
+        relu_seq = nn.ReLU(inplace=True)
+        s_pad_seq = pytorch_utils.SamePad2d(kernel_size=3, stride=2)
+        max_pool_seq = nn.MaxPool2d(kernel_size=3, stride=2)
+
+        self.C1 = nn.Sequential(conv_seq,b_norm_seq,relu_seq,s_pad_seq,max_pool_seq)
+

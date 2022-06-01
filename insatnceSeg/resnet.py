@@ -1,16 +1,4 @@
-import datetime
-import math
-import os
-import random
-import re
-
-import numpy as np
-import torch
 import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-import torch.utils.data
-from torch.autograd import Variable
 
 import pytorch_utils
 
@@ -94,6 +82,58 @@ class Resnet(nn.Module):
         relu_seq = nn.ReLU(inplace=True)
         s_pad_seq = pytorch_utils.SamePad2d(kernel_size=3, stride=2)
         max_pool_seq = nn.MaxPool2d(kernel_size=3, stride=2)
-
+        # Create the 4 or 5 conv layers
         self.C1 = nn.Sequential(conv_seq,b_norm_seq,relu_seq,s_pad_seq,max_pool_seq)
+        self.C2 = self.make_layer(self.block, 64, self.layers[0])
+        self.C3 = self.make_layer(self.block, 128, self.layers[1], stride=2)
+        self.C4 = self.make_layer(self.block, 256, self.layers[2], stride=2)
+        if self.stage5:
+            self.C5 = self.make_layer(self.block,512,self.layers[3],stride=2)
+        else:
+            self.C5 = None
+
+
+    def make_layer(self,block,planes,blocks, stride=1):
+        '''
+        The make_layer method is a helper method for the constructor. It makes more complex layer combinations
+        using the block planes and stride.
+        :param block:
+        :param planes:
+        :param blocks:
+        :param stride:
+        :return:
+        '''
+        downsample = None
+        # check to see if the stride is not one or if the inplanes are not plane * expansion
+        if stride != 1 or self.inplanes != planes * block.expansion:
+            conv = nn.Conv2d(self.inplanes, planes * block.expansion, kernel_size=1, stride=stride)
+            norm = nn.BatchNorm2d(planes * block.expansion, eps=0.001, momentum=0.01)
+            downsample = nn.Sequential(conv, norm)
+
+        layers = []
+        layers.append(block(self.inplanes, planes, stride, downsample))
+        self.inplanes = planes * block.expansion
+        for i in range(1, blocks):
+            layers.append(block(self.inplanes, planes))
+
+
+        return nn.Sequential
+
+    def forward(self,x):
+        '''
+        This is the forward method! It uses the Convolutional layers that were
+        generated in bottleneck and in the constructor to run the forward direciton
+        of the neural network.
+        :param x:
+        :return:
+        '''
+        x = self.C1(x)
+        x = self.C2(x)
+        x = self.C3(x)
+        x = self.C4(x)
+        x = self.C5(x)
+        return x
+
+    def stages(self):
+        return [self.C1, self.C2, self.C3, self.C4, self.C5]
 

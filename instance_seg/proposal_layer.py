@@ -46,6 +46,5 @@ def clip_boxes(boxes, window):
 def call_proposal_layer(inputs, proposal_count, nms_threshold, anchors, config=None):
     '''
     The goal of this method is to introduce the proposal layer. This layer
-    applies bounding box refinement to anchors.
+    applies bounding box refinement to anchors. more edits here
     '''
-

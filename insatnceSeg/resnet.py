@@ -4,7 +4,7 @@ import pytorch_utils
 
 class Bottleneck(nn.Module):
     """
-    This is the bottleneck class. Used as teh block for resnet.
+    This is the bottleneck class. Used as the block for resnet.
     """
     # **** check to see what this is
     expansion = 4
@@ -64,7 +64,8 @@ class Bottleneck(nn.Module):
 
 class Resnet(nn.Module):
     """
-    This is the resnet class. It wraps the layers defined in Bottleneck
+    This is the resnet class. It wraps the layers defined in Bottleneck. The goal of
+    resnet is to find the regions of interest
     """
     def __init__(self, arch, stage5=False):
         super(Resnet,self).__init__()

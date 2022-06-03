@@ -4,7 +4,8 @@ import torch.nn.functional as F
 
 class TopDownLayer(nn.Module):
     '''
-    This class represents a topdown convolutional layer that is used in RPN
+    This class represents a topdown convolutional layer that is used in RPN. Region proposal network.
+    This is used in the Faster RCNN step. This is all to find regions of interest.
     '''
     def __init__(self, in_channels, out_channels):
         '''

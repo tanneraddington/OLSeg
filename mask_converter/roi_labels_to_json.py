@@ -20,7 +20,7 @@ def find_interest_points(image,h,w):
                     interest.append((i,j))
     return interest
 
-def label_image(image):
+def label_image(image, labels):
     h = image.shape[0]
     w = image.shape[1]
 
@@ -59,6 +59,7 @@ def main():
         print("cell #" + cell + ":")
         labels.append(input())
 
+    label_image(image, labels)
 
 
 

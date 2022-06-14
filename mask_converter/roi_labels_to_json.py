@@ -1,7 +1,50 @@
 import cv2, os
-import cython
 import json
 
+class Vertex():
+    '''
+    This is the vertex class, it contains its edges as well as its x and y postion
+    '''
+    def __init__(self, xpos, ypos, edges={}):
+        '''
+        Set edges to default to nothing.
+        :param xpos: pixel location
+        :param ypos: pixel location
+        :param edges: what vertecies it connects to
+        '''
+        super(Vertex, xpos, ypos, edges).__init__()
+        self.xpos = xpos
+        self.ypos = ypos
+        self.edges = edges
+
+    def add_edge(self, vertex):
+        '''
+        Add a vertex to the edge set
+        :param vertex:
+        :return:
+        '''
+        self.edges.append(vertex)
+
+    def get_edges(self):
+        '''
+        getter for the edges
+        :return:
+        '''
+        return self.edges
+
+
+def is_interest_point(image, i, j):
+    '''
+    This method checks to see if a pixel is part of the edge of a mask
+    :param image:
+    :param i:
+    :param j:
+    :return:
+    '''
+    if image[i][j] == 1:
+        return image[i - 1] == 0 or image[i + 1] == 0 or image[j - 1] == 0 or image[j + 1]
+    else:
+        return False
 
 def find_interest_points(image,h,w):
     '''
@@ -13,10 +56,10 @@ def find_interest_points(image,h,w):
     '''
     interest = []
     # loop through each pixel in the image
+    # we may need to add a white border to the image for this to work perfectly
     for i in range(1,h-1):
         for j in range(1,w-1):
-            if image[i][j] == 1:
-                if image[i-1] ==  0 or image[i+1] == 0 or image[j-1] ==  0 or image[j+1]:
+
                     interest.append((i,j))
     return interest
 

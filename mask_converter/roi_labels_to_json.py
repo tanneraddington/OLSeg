@@ -7,17 +7,44 @@ class Cell_Mask():
        and all of the xy postions of the mask
        '''
 
-    def __init__(self, label, xypos = [], bounding_box = []):
+    def __init__(self, label = "", xposes = [], yposes= [], bounding_box = [], sum = -1):
         '''
         Set edges to default to nothing.
         :param xpos: pixel location
         :param ypos: pixel location
         :param edges: what vertecies it connects to
         '''
-        super(Vertex, xypos, bounding_box, label).__init__()
-        self.xypos = xypos
+        super(Vertex, xposes , yposes , bounding_box, label, sum).__init__()
+        self.xposes = xposes
+        self.yposes = yposes
         self.bounding_box = bounding_box
         self.edges = label
+        self.sum = sum
+
+    def calculate_bb(self):
+        # make sure this does not ex
+        sorted_x_pos = self.xposes.sort()
+        sorted_y_pos = self.yposes.sort()
+        self.bounding_box.append(sorted_x_pos[0])
+        self.bounding_box.append(sorted_y_pos[0])
+        self.bounding_box.append(sorted_x_pos[-1])
+        self.bounding_box.append(sorted_y_pos[-1])
+
+
+    def inside_box(self, bounding_box2):
+        '''
+        This method make sure if two cells are within one another they are the same cell and are added as xypositions
+        in the list.
+        :param bounding_box2:
+        :return:
+        '''
+        inside = False
+        for index in range(0,1):
+            if self.bounding_box[index] < bounding_box2[index] and self.bounding_box[index + 2] > bounding_box2[index + 2]:
+                inside = True
+            else:
+                return False
+        return inside
 
 class Vertex():
     '''
@@ -55,8 +82,6 @@ class Vertex():
 
 
 
-point_dict = dict()
-
 def is_interest_point(image, i, j):
     '''
     This method checks to see if a pixel is part of the edge of a mask
@@ -70,29 +95,29 @@ def is_interest_point(image, i, j):
     else:
         return False
 
-def find_edges(image, vertex):
+def find_edges(image, vertex, point_dict):
     '''
     This method finds creates an edge for each connected edge pixel
     :param image:
     :param vertex:
     :return:
     '''
-    global point_dict
     x = vertex.xpos
     y = vertex.ypos
     for i in range(x-1, x+1):
         for j in range(y-1, y+1):
-            if (i,j) in point_dict:
-                vertex.add_edge(point_dict[(i,j)])
+            key = str(i) + ":" + str(j)
+            if key in point_dict:
+                vertex.add_edge(point_dict[key])
                 continue
             if is_interest_point(image, i,j):
                 iv = Vertex(i,j)
-                point_dict[(i,j)] = iv
+                point_dict[key] = iv
                 vertex.add_edge(iv)
-    return vertex
+    return vertex, point_dict
 
 
-def make_graph(image,h,w):
+def make_graph(image,h,w, point_dict):
     '''
     Input is a binary image. An Interest point is a point where it goes white to black or black to white.
     this function will loop through all of the pixels and set up the graph.
@@ -101,26 +126,29 @@ def make_graph(image,h,w):
     :param w:
     :return:
     '''
-    global point_dict
     # loop through each pixel in the image
     # we may need to add a white border to the image for this to work perfectly
     for i in range(1,h-1):
         for j in range(1,w-1):
             # if it is already in the dict of points, check to see if it has been marked, and
             # then if it has not been marked, find all the edges for that point.
-            if (i,j) in point_dict:
-                if point_dict[(i,j)].marked:
+            key = str(i) + ":" + str(j)
+            if key in point_dict:
+                if point_dict[key].marked:
                     continue
                 else:
-                    iv = find_edges(image, point_dict[(i,j)])
+
+                    iv, point_dict = find_edges(image, point_dict[key])
                     iv.marked = True
-                    point_dict[(i, j)] = iv
+                    point_dict[key] = iv
             if is_interest_point(image,i,j):
                 interest_vertex = Vertex(i,j)
-                iv = find_edges(image, interest_vertex)
+                iv, point_dict = find_edges(image, interest_vertex)
                 # after we find the edges mark that we have found the edges
                 iv.marked = True
-                point_dict[(i,j)] = iv
+                key = str(i) + ":" + str(j)
+                point_dict[key] = iv
+
     return point_dict
 
 def dfs(start_vertex):
@@ -129,9 +157,8 @@ def dfs(start_vertex):
     :param start_vertex:
     :return:
     '''
-    global point_dict
     # add the spot to the bag
-    mask_points = []
+    cur_mask = Cell_Mask()
     bag = []
     bag.append(start_vertex)
     while (len(bag) > 0):
@@ -141,25 +168,44 @@ def dfs(start_vertex):
             # mark the vertex
             vertex.visited = True
             # add the point to the mask_points
-            mask_points.append((vertex.xpos, vertex.ypos))
+            cur_mask.xposes.append(vertex.xpos)
+            cur_mask.yposes.append(vertex.ypos)
             # loop through each of the edges
             for edge in vertex.edges:
                 bag.append(edge)
 
-def find_masks(labels):
+    return cur_mask
+
+def find_masks(labels, point_dict):
     '''
     This method drives the dfs, and loops through each
     :param labels:
     :return:
     '''
-    global point_dict
     cur_masks = dict()
     key = 0
     for vertex in point_dict.items():
         if not vertex.visited:
-            xypos = dfs(vertex)
-            cur_masks[key] = xypos
+            mask = dfs(vertex)
+            cur_masks[key] = mask
             key = key + 1
+    sum_dict = dict()
+    masks = []
+    for key in cur_masks.keys():
+        cur_masks[key].calculate_bb()
+        cur_masks[key].sum = sum(cur_masks[key].bounding_box)
+        masks.append(cur_masks[key])
+
+    # here we will check all the bounding boxes
+    if len(cur_masks) > len(labels):
+        print("UNEVEN")
+
+    sorted_masks = masks.sort(key= lambda x:x.sum)
+    # set the labels
+    for index in range(0, len(labels)):
+        sorted_masks[index].label = labels[index]
+
+    return sorted_masks
 
 
 
@@ -171,11 +217,13 @@ def label_image(image, labels):
     :param labels:
     :return:
     '''
-    global point_dict
+    point_dict = dict()
     h = image.shape[0]
     w = image.shape[1]
-    make_graph(image, h, w)
-    cell_list = find_masks(labels)
+    point_dict = make_graph(image, h, w, point_dict)
+    cell_list = find_masks(labels, point_dict)
+    print(cell_list)
+    # add to json
 
 
 def tiff_to_png(image_path):
@@ -192,7 +240,6 @@ def main():
     The main method takes user input for image path, and saves the json image in the same folder.
     :return:
     '''
-    global point_dict
     # get the path to the data
     print("Batch or One Image?")
     num_vals = input()
@@ -206,11 +253,11 @@ def main():
     image = tiff_to_png(path)
     cv2.imshow("input image", image)
     print("NUMBER OF CELLS")
-    cell_count = input().int()
+    cell_count = int(input())
     print("left to right top to bottom cell labels:")
     labels = []
     for cell in range(0,cell_count):
-        print("cell #" + cell + ":")
+        print("cell #" + str(cell) + ":")
         labels.append(input())
 
     label_image(image, labels)

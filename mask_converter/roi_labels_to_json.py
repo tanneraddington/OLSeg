@@ -7,19 +7,18 @@ class Cell_Mask():
        and all of the xy postions of the mask
        '''
 
-    def __init__(self, label = "", xposes = set(), yposes= set(), bounding_box = set(), sum = -1):
+    def __init__(self, label = ""):
         '''
         Set edges to default to nothing.
         :param xpos: pixel location
         :param ypos: pixel location
         :param edges: what vertecies it connects to
         '''
-        super(Cell_Mask,self).__init__()
-        self.xposes = xposes
-        self.yposes = yposes
-        self.bounding_box = bounding_box
+        self.xposes = set()
+        self.yposes = set()
+        self.bounding_box = set()
         self.label = label
-        self.sum = sum
+        self.sum = -1
 
     def calculate_bb(self):
         # make sure this does not ex
@@ -56,7 +55,7 @@ class Cell_Mask():
         print("X Y POSITIONS:")
         xpos = list(self.xposes)
         ypos = list(self.yposes)
-        for index in range(0, 50):
+        for index in range(0, len(xpos)):
             print(str(xpos[index]) + ":" + str(ypos[index]))
         print("Label:" + self.label)
         print("Bounding Box:" + str(self.bounding_box))
@@ -65,19 +64,18 @@ class Vertex():
     '''
     This is the vertex class, it contains its edges as well as its x and y postion
     '''
-    def __init__(self, xpos, ypos, edges=[], marked=False, visited=False):
+    def __init__(self, xpos, ypos):
         '''
         Set edges to default to nothing.
         :param xpos: pixel location
         :param ypos: pixel location
         :param edges: what vertecies it connects to
         '''
-        super(Vertex, self).__init__()
         self.xpos = xpos
         self.ypos = ypos
-        self.edges = edges
-        self.marked = marked
-        self.visited = visited
+        self.edges = set()
+        self.marked = False
+        self.visited = False
 
     def add_edge(self, vertex):
         '''
@@ -85,15 +83,7 @@ class Vertex():
         :param vertex:
         :return:
         '''
-        self.edges.append(vertex)
-
-    def get_edges(self):
-        '''
-        getter for the edges
-        :return:
-        '''
-        return self.edges
-
+        self.edges.add(vertex)
 
 
 
@@ -111,13 +101,14 @@ def is_interest_point(image, i, j):
     else:
         return False
 
-def find_edges(image, vertex, point_dict):
+def find_edges(image, i, j , point_dict):
     '''
     This method finds creates an edge for each connected edge pixel
     :param image:
     :param vertex:
     :return:
     '''
+    vertex = Vertex(i, j)
     x = vertex.xpos
     y = vertex.ypos
     for i in range(x-1, x+1):
@@ -158,8 +149,7 @@ def make_graph(image,h,w, point_dict):
                     iv.marked = True
                     point_dict[key] = iv
             if is_interest_point(image,i,j):
-                interest_vertex = Vertex(i,j)
-                iv, point_dict = find_edges(image, interest_vertex, point_dict)
+                iv, point_dict = find_edges(image, i,j, point_dict)
                 # after we find the edges mark that we have found the edges
                 iv.marked = True
                 key = str(i) + ":" + str(j)

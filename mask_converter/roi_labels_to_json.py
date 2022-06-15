@@ -55,8 +55,10 @@ class Cell_Mask():
         print("X Y POSITIONS:")
         xpos = list(self.xposes)
         ypos = list(self.yposes)
-        for index in range(0, len(xpos)):
-            print(str(xpos[index]) + ":" + str(ypos[index]))
+        print(xpos)
+        print(ypos)
+        # for index in range(0, len(xpos)):
+        #     print(str(xpos[index]) + ":" + str(ypos[index]))
         print("Label:" + self.label)
         print("Bounding Box:" + str(self.bounding_box))
 
@@ -96,8 +98,8 @@ def is_interest_point(image, i, j):
     :return:
     '''
     if image[i][j] == 0:
-        return image[i][j - 1] == 255 or image[i][j + 1] == 255 or image[i + 1][j] == 255 or image[i - 1][j] == 255
-
+        if(image[i][j - 1] == 255 or image[i][j + 1] == 255 or image[i + 1][j] == 255 or image[i - 1][j] == 255):
+            return True
     else:
         return False
 
@@ -111,8 +113,10 @@ def find_edges(image, i, j , point_dict):
     vertex = Vertex(i, j)
     x = vertex.xpos
     y = vertex.ypos
-    for i in range(x-1, x+1):
-        for j in range(y-1, y+1):
+    for i in range(x-1, x+2):
+        for j in range(y-1, y+2):
+            if i == x and j == y:
+                continue
             key = str(i) + ":" + str(j)
             if key in point_dict:
                 vertex.add_edge(point_dict[key])
@@ -144,8 +148,7 @@ def make_graph(image,h,w, point_dict):
                 if point_dict[key].marked:
                     continue
                 else:
-
-                    iv, point_dict = find_edges(image, point_dict[key])
+                    iv, point_dict = find_edges(image, i,j, point_dict)
                     iv.marked = True
                     point_dict[key] = iv
             if is_interest_point(image,i,j):
@@ -157,7 +160,7 @@ def make_graph(image,h,w, point_dict):
 
     return point_dict
 
-def dfs(start_vertex):
+def dfs(start_vertex, point_dict):
     '''
     This will run a dfs to find a cycle, which is equal to a
     :param start_vertex:
@@ -166,21 +169,23 @@ def dfs(start_vertex):
     # add the spot to the bag
     cur_mask = Cell_Mask()
     bag = []
-    bag.append(start_vertex)
+    start_key = str(start_vertex.xpos) + ":" + str(start_vertex.ypos)
+    bag.append(start_key)
     while (len(bag) > 0):
         # remove from bag
-        vertex = bag.pop()
-        if (not vertex.visited):
+        vertex_key = bag.pop()
+        if (not point_dict[vertex_key].visited):
             # mark the vertex
-            vertex.visited = True
+            point_dict[vertex_key].visited = True
             # add the point to the mask_points
-            cur_mask.xposes.add(vertex.xpos)
-            cur_mask.yposes.add(vertex.ypos)
+            cur_mask.xposes.add(point_dict[vertex_key].xpos)
+            cur_mask.yposes.add(point_dict[vertex_key].ypos)
             # loop through each of the edges
-            for edge in vertex.edges:
-                bag.append(edge)
+            for edge in point_dict[vertex_key].edges:
+                edge_key = str(edge.xpos) + ":" + str(edge.ypos)
+                bag.append(edge_key)
 
-    return cur_mask
+    return cur_mask, point_dict
 
 def find_masks(labels, point_dict):
     '''
@@ -194,7 +199,7 @@ def find_masks(labels, point_dict):
         vertex = point_dict[key]
         if not vertex.visited:
             print(vertex)
-            mask = dfs(vertex)
+            mask, point_dict = dfs(vertex, point_dict)
             cur_masks[key_val] = mask
             key_val = key_val + 1
     masks = []

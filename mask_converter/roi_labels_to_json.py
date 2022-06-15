@@ -14,7 +14,7 @@ class Cell_Mask():
         :param ypos: pixel location
         :param edges: what vertecies it connects to
         '''
-        super(Vertex, xposes , yposes , bounding_box, label, sum).__init__()
+        super(Cell_Mask,self).__init__()
         self.xposes = xposes
         self.yposes = yposes
         self.bounding_box = bounding_box
@@ -23,12 +23,10 @@ class Cell_Mask():
 
     def calculate_bb(self):
         # make sure this does not ex
-        sorted_x_pos = self.xposes.sort()
-        sorted_y_pos = self.yposes.sort()
-        self.bounding_box.append(sorted_x_pos[0])
-        self.bounding_box.append(sorted_y_pos[0])
-        self.bounding_box.append(sorted_x_pos[-1])
-        self.bounding_box.append(sorted_y_pos[-1])
+        self.bounding_box.append(min(self.xposes))
+        self.bounding_box.append(min(self.yposes))
+        self.bounding_box.append(max(self.xposes))
+        self.bounding_box.append(max(self.yposes))
 
 
     def inside_box(self, bounding_box2):
@@ -50,14 +48,14 @@ class Vertex():
     '''
     This is the vertex class, it contains its edges as well as its x and y postion
     '''
-    def __init__(self, xpos, ypos, edges={}, marked=False, visited=False):
+    def __init__(self, xpos, ypos, edges=[], marked=False, visited=False):
         '''
         Set edges to default to nothing.
         :param xpos: pixel location
         :param ypos: pixel location
         :param edges: what vertecies it connects to
         '''
-        super(Vertex, xpos, ypos, edges, marked).__init__()
+        super(Vertex, self).__init__()
         self.xpos = xpos
         self.ypos = ypos
         self.edges = edges
@@ -90,8 +88,9 @@ def is_interest_point(image, i, j):
     :param j:
     :return:
     '''
-    if image[i][j] == 1:
-        return image[i - 1] == 0 or image[i + 1] == 0 or image[j - 1] == 0 or image[j + 1]
+    if image[i][j] == 0:
+        return image[i][j - 1] == 255 or image[i][j + 1] == 255 or image[i + 1][j] == 255 or image[i - 1][j] == 255
+
     else:
         return False
 
@@ -143,7 +142,7 @@ def make_graph(image,h,w, point_dict):
                     point_dict[key] = iv
             if is_interest_point(image,i,j):
                 interest_vertex = Vertex(i,j)
-                iv, point_dict = find_edges(image, interest_vertex)
+                iv, point_dict = find_edges(image, interest_vertex, point_dict)
                 # after we find the edges mark that we have found the edges
                 iv.marked = True
                 key = str(i) + ":" + str(j)
@@ -183,13 +182,14 @@ def find_masks(labels, point_dict):
     :return:
     '''
     cur_masks = dict()
-    key = 0
-    for vertex in point_dict.items():
+    key_val = 0
+    for key in point_dict.keys():
+        vertex = point_dict[key]
         if not vertex.visited:
+            print(vertex)
             mask = dfs(vertex)
-            cur_masks[key] = mask
-            key = key + 1
-    sum_dict = dict()
+            cur_masks[key_val] = mask
+            key_val = key_val + 1
     masks = []
     for key in cur_masks.keys():
         cur_masks[key].calculate_bb()

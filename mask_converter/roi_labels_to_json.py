@@ -7,7 +7,7 @@ class Cell_Mask():
        and all of the xy postions of the mask
        '''
 
-    def __init__(self, label = "", xposes = [], yposes= [], bounding_box = [], sum = -1):
+    def __init__(self, label = "", xposes = set(), yposes= set(), bounding_box = set(), sum = -1):
         '''
         Set edges to default to nothing.
         :param xpos: pixel location
@@ -18,15 +18,15 @@ class Cell_Mask():
         self.xposes = xposes
         self.yposes = yposes
         self.bounding_box = bounding_box
-        self.edges = label
+        self.label = label
         self.sum = sum
 
     def calculate_bb(self):
         # make sure this does not ex
-        self.bounding_box.append(min(self.xposes))
-        self.bounding_box.append(min(self.yposes))
-        self.bounding_box.append(max(self.xposes))
-        self.bounding_box.append(max(self.yposes))
+        self.bounding_box.add(min(self.xposes))
+        self.bounding_box.add(min(self.yposes))
+        self.bounding_box.add(max(self.xposes))
+        self.bounding_box.add(max(self.yposes))
 
 
     def inside_box(self, bounding_box2):
@@ -37,12 +37,29 @@ class Cell_Mask():
         :return:
         '''
         inside = False
+        self_bb = list(self.bounding_box)
+        bounding_box2 = list(bounding_box2)
         for index in range(0,1):
-            if self.bounding_box[index] < bounding_box2[index] and self.bounding_box[index + 2] > bounding_box2[index + 2]:
+            if self_bb[index] < bounding_box2[index] and self_bb[index + 2] > bounding_box2[index + 2]:
                 inside = True
             else:
                 return False
         return inside
+
+
+    def print_mask(self):
+        '''
+        This method prints the masks.
+        :return:
+        '''
+        print("MASK LENGTH: " + str(len(self.xposes)))
+        print("X Y POSITIONS:")
+        xpos = list(self.xposes)
+        ypos = list(self.yposes)
+        for index in range(0, 50):
+            print(str(xpos[index]) + ":" + str(ypos[index]))
+        print("Label:" + self.label)
+        print("Bounding Box:" + str(self.bounding_box))
 
 class Vertex():
     '''
@@ -167,8 +184,8 @@ def dfs(start_vertex):
             # mark the vertex
             vertex.visited = True
             # add the point to the mask_points
-            cur_mask.xposes.append(vertex.xpos)
-            cur_mask.yposes.append(vertex.ypos)
+            cur_mask.xposes.add(vertex.xpos)
+            cur_mask.yposes.add(vertex.ypos)
             # loop through each of the edges
             for edge in vertex.edges:
                 bag.append(edge)
@@ -200,12 +217,15 @@ def find_masks(labels, point_dict):
     if len(cur_masks) > len(labels):
         print("UNEVEN")
 
-    sorted_masks = masks.sort(key= lambda x:x.sum)
+    masks.sort(key= lambda x:x.sum)
     # set the labels
     for index in range(0, len(labels)):
-        sorted_masks[index].label = labels[index]
+        masks[index].label = labels[index]
 
-    return sorted_masks
+    for mask in masks:
+        mask.print_mask()
+
+    return masks
 
 
 

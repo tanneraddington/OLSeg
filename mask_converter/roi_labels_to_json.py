@@ -16,34 +16,41 @@ class Cell_Mask():
         '''
         self.xposes = set()
         self.yposes = set()
+        self.xmax = -1
+        self.ymax = -1
+        self.xmin = -1
+        self.ymin = -1
         self.bounding_box = set()
         self.label = label
         self.sum = -1
+        self.cell_num = -1
+        self.area = 0
+        self.marked = False
 
     def calculate_bb(self):
         # make sure this does not ex
+        self.xmax = max(self.xposes)
+        self.ymax = max(self.yposes)
+        self.xmin = min(self.xposes)
+        self.ymin = min(self.yposes)
         self.bounding_box.add(min(self.xposes))
         self.bounding_box.add(min(self.yposes))
         self.bounding_box.add(max(self.xposes))
         self.bounding_box.add(max(self.yposes))
+        self.area = (self.ymax - self.ymin) * (self.xmax - self.xmin)
 
 
-    def inside_box(self, bounding_box2):
+    def inside_box(self, xmax, ymax, xmin, ymin):
         '''
         This method make sure if two cells are within one another they are the same cell and are added as xypositions
         in the list.
         :param bounding_box2:
         :return:
         '''
-        inside = False
-        self_bb = list(self.bounding_box)
-        bounding_box2 = list(bounding_box2)
-        for index in range(0,1):
-            if self_bb[index] < bounding_box2[index] and self_bb[index + 2] > bounding_box2[index + 2]:
-                inside = True
-            else:
-                return False
-        return inside
+        if self.xmin > xmin and self.ymin > ymin and self.xmax < xmax and self.ymax < ymax :
+            return True
+        else:
+            return False
 
 
     def print_mask(self):
@@ -61,6 +68,11 @@ class Cell_Mask():
         #     print(str(xpos[index]) + ":" + str(ypos[index]))
         print("Label:" + self.label)
         print("Bounding Box:" + str(self.bounding_box))
+        print("YMIN: " + str(self.xmin))
+        print("YMAX: " + str(self.xmax))
+        print("XMIN: " + str(self.ymin))
+        print("XMAX: " + str(self.ymax))
+        print("AREA: " + str(self.area))
 
 class Vertex():
     '''
@@ -203,6 +215,7 @@ def find_masks(labels, point_dict):
             cur_masks[key_val] = mask
             key_val = key_val + 1
     masks = []
+
     for key in cur_masks.keys():
         cur_masks[key].calculate_bb()
         cur_masks[key].sum = sum(cur_masks[key].bounding_box)
@@ -212,15 +225,55 @@ def find_masks(labels, point_dict):
     if len(cur_masks) > len(labels):
         print("UNEVEN")
 
-    masks.sort(key= lambda x:x.sum)
-    # set the labels
-    for index in range(0, len(labels)):
-        masks[index].label = labels[index]
+    masks.sort(key= lambda x:x.area, reverse=False)
 
-    for mask in masks:
+    final_masks = []
+    # new algo for seeing if boxes are contained
+    while(len(masks) > 0):
+        top_mask = masks.pop()
+        if top_mask.marked:
+            continue
+        # check each remaining mask combo to see if it is in the box
+        for mask in masks:
+            if mask.inside_box(top_mask.xmax, top_mask.ymax, top_mask.xmin, top_mask.ymin):
+                top_mask.xposes.union(mask.xposes)
+                top_mask.yposes.union(mask.yposes)
+                mask.marked = True
+
+        final_masks.append(top_mask)
+
+
+    # # set the labels
+    # for index in range(0, len(labels)):
+    #     masks[index].label = labels[index]
+
+    # check to see if the mask is a whole, if it is, add x y pos to mask
+    # final_masks = dict()
+    # cell_num = 0
+    # for mask in masks:
+    #     for other_mask in masks:
+    #         if mask.inside_box(other_mask.xmin, other_mask.ymin, other_mask.xmin, other_mask.ymin):
+    #             # add the x and y posses
+    #             other_mask.xposes.union(mask.xposes)
+    #             other_mask.xposes.union(mask.xposes)
+    #             if other_mask.cell_num != -1 and other_mask.cell_num in final_masks:
+    #                 final_masks[other_mask.cell_num] = other_mask
+    #             else:
+    #                 other_mask.cell_num = cell_num
+    #                 final_masks[cell_num] = other_mask
+    #                 cell_num = cell_num + 1
+
+
+    # cells = []
+    # for key in final_masks.keys():
+    #     mask = final_masks[key]
+    #     cells.append(mask)
+    #     mask.print_mask()
+    print("ORIG")
+    for mask in final_masks:
         mask.print_mask()
 
-    return masks
+    return final_masks
 
 
 

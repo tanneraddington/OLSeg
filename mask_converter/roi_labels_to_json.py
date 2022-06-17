@@ -74,6 +74,11 @@ class Cell_Mask():
         print("XMAX: " + str(self.ymax))
         print("AREA: " + str(self.area))
 
+    def create_json_dict(self):
+        json_dict = dict()
+        # look at best way to make this json
+        return json_dict
+
 class Vertex():
     '''
     This is the vertex class, it contains its edges as well as its x and y postion
@@ -263,7 +268,13 @@ def label_image(image, labels):
     w = image.shape[1]
     point_dict = make_graph(image, h, w, point_dict)
     cell_list = find_masks(labels, point_dict)
-    print(cell_list)
+    cell_dict = dict()
+    index = 0
+    for mask in cell_list:
+        mask_dict = mask.create_json_dict()
+        cell_dict["Cell" + str(index)] = mask_dict
+
+    return cell_dict
     # add to json
 
 
@@ -301,7 +312,12 @@ def main():
         print("cell #" + str(cell) + ":")
         labels.append(input())
 
-    label_image(image, labels)
+    cell_dict = label_image(image, labels)
+    image_name = "281.it11.20x.r1.8"
+    # write the json
+    with open(image_name + ".json", "w") as write:
+        json.dump(cell_dict, write)
+
 
 
 

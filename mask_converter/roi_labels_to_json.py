@@ -242,33 +242,6 @@ def find_masks(labels, point_dict):
 
         final_masks.append(top_mask)
 
-
-    # # set the labels
-    # for index in range(0, len(labels)):
-    #     masks[index].label = labels[index]
-
-    # check to see if the mask is a whole, if it is, add x y pos to mask
-    # final_masks = dict()
-    # cell_num = 0
-    # for mask in masks:
-    #     for other_mask in masks:
-    #         if mask.inside_box(other_mask.xmin, other_mask.ymin, other_mask.xmin, other_mask.ymin):
-    #             # add the x and y posses
-    #             other_mask.xposes.union(mask.xposes)
-    #             other_mask.xposes.union(mask.xposes)
-    #             if other_mask.cell_num != -1 and other_mask.cell_num in final_masks:
-    #                 final_masks[other_mask.cell_num] = other_mask
-    #             else:
-    #                 other_mask.cell_num = cell_num
-    #                 final_masks[cell_num] = other_mask
-    #                 cell_num = cell_num + 1
-
-
-    # cells = []
-    # for key in final_masks.keys():
-    #     mask = final_masks[key]
-    #     cells.append(mask)
-    #     mask.print_mask()
     print("ORIG")
     for mask in final_masks:
         mask.print_mask()

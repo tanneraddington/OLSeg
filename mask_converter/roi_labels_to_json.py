@@ -14,8 +14,8 @@ class Cell_Mask():
         :param ypos: pixel location
         :param edges: what vertecies it connects to
         '''
-        self.xposes = set()
-        self.yposes = set()
+        self.xposes = []
+        self.yposes = []
         self.xmax = -1
         self.ymax = -1
         self.xmin = -1
@@ -190,8 +190,8 @@ def dfs(start_vertex, point_dict):
             # mark the vertex
             point_dict[vertex_key].visited = True
             # add the point to the mask_points
-            cur_mask.xposes.add(point_dict[vertex_key].xpos)
-            cur_mask.yposes.add(point_dict[vertex_key].ypos)
+            cur_mask.xposes.append(point_dict[vertex_key].xpos)
+            cur_mask.yposes.append(point_dict[vertex_key].ypos)
             # loop through each of the edges
             for edge in point_dict[vertex_key].edges:
                 edge_key = str(edge.xpos) + ":" + str(edge.ypos)
@@ -236,8 +236,8 @@ def find_masks(labels, point_dict):
         # check each remaining mask combo to see if it is in the box
         for mask in masks:
             if mask.inside_box(top_mask.xmax, top_mask.ymax, top_mask.xmin, top_mask.ymin):
-                top_mask.xposes.union(mask.xposes)
-                top_mask.yposes.union(mask.yposes)
+                top_mask.xposes = top_mask.xposes + mask.xposes
+                top_mask.yposes = top_mask.yposes + mask.yposes
                 mask.marked = True
 
         final_masks.append(top_mask)

@@ -76,6 +76,13 @@ class Cell_Mask():
 
     def create_json_dict(self):
         json_dict = dict()
+        list_of_pos = dict()
+        for index in range(0, len(self.xposes)):
+            list_of_pos[index] = [self.xposes[index], self.yposes]
+        x_y = list(list_of_pos.values())
+        json_dict["positions"] = x_y
+        json_dict["label"] = self.label
+
         # look at best way to make this json
         return json_dict
 
@@ -215,7 +222,6 @@ def find_masks(labels, point_dict):
     for key in point_dict.keys():
         vertex = point_dict[key]
         if not vertex.visited:
-            print(vertex)
             mask, point_dict = dfs(vertex, point_dict)
             cur_masks[key_val] = mask
             key_val = key_val + 1
@@ -225,10 +231,6 @@ def find_masks(labels, point_dict):
         cur_masks[key].calculate_bb()
         cur_masks[key].sum = sum(cur_masks[key].bounding_box)
         masks.append(cur_masks[key])
-
-    # here we will check all the bounding boxes
-    if len(cur_masks) > len(labels):
-        print("UNEVEN")
 
     masks.sort(key= lambda x:x.area, reverse=False)
 
@@ -270,10 +272,11 @@ def label_image(image, labels):
     cell_list = find_masks(labels, point_dict)
     cell_dict = dict()
     index = 0
+    shapes = []
     for mask in cell_list:
         mask_dict = mask.create_json_dict()
-        cell_dict["Cell" + str(index)] = mask_dict
-
+        shapes.append(mask_dict)
+    cell_dict["shapes"] = shapes
     return cell_dict
     # add to json
 
@@ -314,12 +317,13 @@ def main():
 
     cell_dict = label_image(image, labels)
     image_name = "281.it11.20x.r1.8"
+    cell_dict["imagePath"] = path
+    cell_dict["imageHeight"] =  image.shape[0]
+    cell_dict["imageWidth"] = image.shape[1]
+    # print(cell_dict)
     # write the json
-    with open(image_name + ".json", "w") as write:
+    with open( "/Users/tannerwatts/Desktop/OLSeg/test_images/image_01_mask.json", "w") as write:
         json.dump(cell_dict, write)
-
-
-
 
 
 

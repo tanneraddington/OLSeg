@@ -78,9 +78,9 @@ class Cell_Mask():
         json_dict = dict()
         list_of_pos = [None] * len(self.xposes)
         for index in range(0, len(self.xposes)):
-            list_of_pos[index] = (self.xposes[index], self.yposes[index])
+            list_of_pos[index] = (self.yposes[index], self.xposes[index])
         x_y = list_of_pos
-        json_dict["positions"] = x_y
+        json_dict["points"] = x_y
         json_dict["label"] = self.label
 
         # look at best way to make this json
@@ -284,6 +284,7 @@ def label_image(image, labels):
 def tiff_to_png(image_path):
     # convert image and return
     image = cv2.imread(image_path, 0)
+    cv2.imshow("input image", image)
     # define a threshold, 128 is the middle of black and white in grey scale
     thresh = 128
     # threshold the image
@@ -300,7 +301,6 @@ def make_json(path, json_pth):
     # path = input()
     # change to black and white
     image = tiff_to_png(path)
-    cv2.imshow("input image", image)
     # print("NUMBER OF CELLS")
     # cell_count = int(input())
 
@@ -310,10 +310,8 @@ def make_json(path, json_pth):
     #     print("cell #" + str(cell) + ":")
     #     labels.append(input())
 
-    ### CHANGE DIR PATH HERE ###
-    dir_path = "/Users/tannerwatts/Desktop/serotonin-segmentation/prediction_imgs/"
     cell_dict = label_image(image, labels)
-    cell_dict["imagePath"] = path
+    cell_dict["imagePath"] = path.replace('_mask', '').replace('.tif', '.png')
     cell_dict["imageHeight"] = image.shape[0]
     cell_dict["imageWidth"] = image.shape[1]
     # write the json
@@ -331,14 +329,14 @@ def main():
     # num_vals = input()
 
     ### CHANGE DIR PATH HERE ###
-    dir_path = "/Users/tannerwatts/Desktop/OLSeg/detectron_segmentation/prediction_imgs/train"
+    dir_path = "/Users/tannerwatts/Desktop/OLSeg/detectron_segmentation/test"
 
     # loop through each image in a directory.
     image_list = []
     index = 1
     for filename in [file for file in os.listdir(dir_path)]:
         image_pth = os.path.join(dir_path, filename)
-        if (image_pth.__contains__('mask')):
+        if image_pth.__contains__('mask') and not image_pth.__contains__('.json'):
             print("IMAGE #: " + str(index))
             print(filename)
             image_name = filename.replace('.tif','.json')

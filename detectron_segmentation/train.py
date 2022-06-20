@@ -50,11 +50,13 @@ def get_data_dicts(directory, classes):
 
 def train(user_path):
 
+    # HERE WE CAN CHANGE THE MODEL
     config_file_path = "COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml"
     checkpoint_url = "COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml"
+
     output_dir = "./output/instance_seg"
     num_classes = 1
-    classes = ['cell']
+    classes = ['Cell']
     train_dataset_name = "cells_train"
     test_dataset_name = "cells_test"
     device = "cpu"
@@ -64,7 +66,7 @@ def train(user_path):
     data_path = user_path
     if (user_path == "def"):
         #### change this path ####
-        data_path = "/Users/tannerwatts/Desktop/serotonin-segmentation/"
+        data_path = "/Users/tannerwatts/Desktop/OLSeg/detectron_segmentation"
     # register train and test dataset
     for d in ["train", "test"]:
         DatasetCatalog.register(
@@ -89,9 +91,11 @@ def train(user_path):
 
 def main():
     # get the path to the data
-    print("Input data path:")
-    user_inp = input()
-    train(user_inp)
+    # print("Input data path:")
+    # user_inp = input()
+    data_path = "/Users/tannerwatts/Desktop/OLSeg/detectron_segmentation/"
+    print("Data path: ")
+    train(data_path)
 
 
 

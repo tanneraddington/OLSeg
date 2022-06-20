@@ -1,2 +1,6 @@
 test_images/
 detectron_segmentation/prediction_imgs/
+detectron_segmentation/test/
+detectron_segmentation/train/
+detectron_segmentation/detectron2/
+

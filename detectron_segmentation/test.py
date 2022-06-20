@@ -25,7 +25,7 @@ def main():
     # loop through each image in a directory.
     image_list = []
     index = 1
-    for filename in [file for file in os.listdir(dir_path) if file.endswith('.jpg')]:
+    for filename in [file for file in os.listdir(dir_path) if file.endswith('.png')]:
         image_pth = os.path.join(dir_path, filename)
         # suround with loop
         print("IMAGE #: " + str(index))

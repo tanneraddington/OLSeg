@@ -290,40 +290,61 @@ def tiff_to_png(image_path):
     img_binary = cv2.threshold(image, thresh, 255, cv2.THRESH_BINARY)[1]
     return img_binary
 
+def make_json(path, json_pth):
+    '''
+    This method creates json for 1 image. It is used in main to create for batches as well.
+    :param path:
+    :return:
+    '''
+    # print("Input image path:")
+    # path = input()
+    # change to black and white
+    image = tiff_to_png(path)
+    cv2.imshow("input image", image)
+    # print("NUMBER OF CELLS")
+    # cell_count = int(input())
+
+    # print("left to right top to bottom cell labels:")
+    labels = []
+    # for cell in range(0,cell_count):
+    #     print("cell #" + str(cell) + ":")
+    #     labels.append(input())
+
+    ### CHANGE DIR PATH HERE ###
+    dir_path = "/Users/tannerwatts/Desktop/serotonin-segmentation/prediction_imgs/"
+    cell_dict = label_image(image, labels)
+    cell_dict["imagePath"] = path
+    cell_dict["imageHeight"] = image.shape[0]
+    cell_dict["imageWidth"] = image.shape[1]
+    # write the json
+    with open(json_pth, "w") as write:
+        json.dump(cell_dict, write)
+
 def main():
     '''
     The main method takes user input for image path, and saves the json image in the same folder.
     :return:
     '''
+
     # get the path to the data
-    print("Batch or One Image?")
-    num_vals = input()
-    #TODO: setup for batch
-    if(num_vals == "Batch" or num_vals == "batch"):
-        print("NEED TO IMPLEMENT FOR BATCH")
+    # print("Batch or One Image?")
+    # num_vals = input()
 
-    print("Input image path:")
-    path = input()
-    # change to black and white
-    image = tiff_to_png(path)
-    cv2.imshow("input image", image)
-    print("NUMBER OF CELLS")
-    cell_count = int(input())
-    print("left to right top to bottom cell labels:")
-    labels = []
-    for cell in range(0,cell_count):
-        print("cell #" + str(cell) + ":")
-        labels.append(input())
+    ### CHANGE DIR PATH HERE ###
+    dir_path = "/Users/tannerwatts/Desktop/OLSeg/detectron_segmentation/prediction_imgs/train"
 
-    cell_dict = label_image(image, labels)
-    image_name = "281.it11.20x.r1.8"
-    cell_dict["imagePath"] = path
-    cell_dict["imageHeight"] =  image.shape[0]
-    cell_dict["imageWidth"] = image.shape[1]
-    print(cell_dict)
-    # write the json
-    with open( "/Users/tannerwatts/Desktop/OLSeg/test_images/image_01_mask.json", "w") as write:
-        json.dump(cell_dict, write)
+    # loop through each image in a directory.
+    image_list = []
+    index = 1
+    for filename in [file for file in os.listdir(dir_path)]:
+        image_pth = os.path.join(dir_path, filename)
+        if (image_pth.__contains__('mask')):
+            print("IMAGE #: " + str(index))
+            print(filename)
+            image_name = filename.replace('.tif','.json')
+            json_pth = os.path.join(dir_path, image_name)
+            make_json(image_pth,json_pth)
+            index = index + 1
 
 
 

@@ -7,7 +7,7 @@ class Cell_Mask():
        and all of the xy postions of the mask
        '''
 
-    def __init__(self, label = ""):
+    def __init__(self, label = "Cell"):
         '''
         Set edges to default to nothing.
         :param xpos: pixel location

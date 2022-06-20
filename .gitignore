@@ -1,1 +1,3 @@
 test_images/
+detectron_segmentation/test
+detectron_segmentation/train

@@ -76,10 +76,10 @@ class Cell_Mask():
 
     def create_json_dict(self):
         json_dict = dict()
-        list_of_pos = dict()
+        list_of_pos = [None] * len(self.xposes)
         for index in range(0, len(self.xposes)):
-            list_of_pos[index] = [self.xposes[index], self.yposes]
-        x_y = list(list_of_pos.values())
+            list_of_pos[index] = (self.xposes[index], self.yposes[index])
+        x_y = list_of_pos
         json_dict["positions"] = x_y
         json_dict["label"] = self.label
 
@@ -320,7 +320,7 @@ def main():
     cell_dict["imagePath"] = path
     cell_dict["imageHeight"] =  image.shape[0]
     cell_dict["imageWidth"] = image.shape[1]
-    # print(cell_dict)
+    print(cell_dict)
     # write the json
     with open( "/Users/tannerwatts/Desktop/OLSeg/test_images/image_01_mask.json", "w") as write:
         json.dump(cell_dict, write)

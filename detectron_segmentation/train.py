@@ -25,8 +25,8 @@ def get_data_dicts(directory, classes):
         filename = os.path.join(directory, img_anns["imagePath"])
 
         record["file_name"] = filename
-        record["height"] = 1024
-        record["width"] = 1024
+        record["height"] = 2752
+        record["width"] = 2208
 
         annos = img_anns["shapes"]
         objs = []
@@ -55,8 +55,8 @@ def train(user_path):
     checkpoint_url = "COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml"
 
     output_dir = "./output/instance_seg"
-    num_classes = 1
-    classes = ['Cell']
+    num_classes = 2
+    classes = ['Cell', 'Hole']
     train_dataset_name = "cells_train"
     test_dataset_name = "cells_test"
     device = "cpu"
@@ -78,7 +78,7 @@ def train(user_path):
     microcontroller_metadata = MetadataCatalog.get(train_dataset_name)
 
     # verify dataset
-    plot_samples(dataset_name="cells_train", n=1)
+    plot_samples(dataset_name="cells_train", n=2)
     cfg = get_train_cfg(config_file_path, checkpoint_url, train_dataset_name, test_dataset_name, num_classes, device, output_dir)
     with open(cfg_save_path, 'wb') as f:
         pickle.dump(cfg,f,protocol=pickle.HIGHEST_PROTOCOL)
@@ -94,7 +94,6 @@ def main():
     # print("Input data path:")
     # user_inp = input()
     data_path = "/Users/tannerwatts/Desktop/OLSeg/detectron_segmentation/"
-    print("Data path: ")
     train(data_path)
 
 

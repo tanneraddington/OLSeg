@@ -1,3 +1,5 @@
+import math
+
 import cv2, os
 import json
 
@@ -74,11 +76,20 @@ class Cell_Mask():
         print("XMAX: " + str(self.ymax))
         print("AREA: " + str(self.area))
 
+    def dist(self, points1, points2):
+        return math.sqrt((points1[0] - points2[0])**2 + (points1[1] - points2[1])**2)
+
     def create_json_dict(self):
         json_dict = dict()
         list_of_pos = [None] * len(self.xposes)
+        prev_pos = (self.yposes[0], self.xposes[0])
         for index in range(0, len(self.xposes)):
-            list_of_pos[index] = (self.yposes[index], self.xposes[index])
+            point = (self.yposes[index], self.xposes[index])
+            distance = self.dist(prev_pos, point)
+            # if distance < 2.0:
+            #     list_of_pos[index] = point
+            list_of_pos[index] = point
+            prev_pos = (self.yposes[index], self.xposes[index])
         x_y = list_of_pos
         json_dict["points"] = x_y
         json_dict["label"] = self.label
@@ -243,10 +254,15 @@ def find_masks(labels, point_dict):
         # check each remaining mask combo to see if it is in the box
         for mask in masks:
             if mask.inside_box(top_mask.xmax, top_mask.ymax, top_mask.xmin, top_mask.ymin):
-                top_mask.xposes = top_mask.xposes + mask.xposes
-                top_mask.yposes = top_mask.yposes + mask.yposes
+                # this will add the wholes. other wise it is ignored.
+                ####### CHANGE THIS BACK #######
+                # top_mask.xposes = top_mask.xposes + mask.xposes
+                # top_mask.yposes = top_mask.yposes + mask.yposes
+                mask.label = "Hole"
+                final_masks.append(mask)
                 mask.marked = True
 
+        top_mask.label = "Cell"
         final_masks.append(top_mask)
 
     print("ORIG")
@@ -329,7 +345,7 @@ def main():
     # num_vals = input()
 
     ### CHANGE DIR PATH HERE ###
-    dir_path = "/Users/tannerwatts/Desktop/OLSeg/detectron_segmentation/test"
+    dir_path = "/Users/tannerwatts/Desktop/OLSeg/detectron_segmentation/train"
 
     # loop through each image in a directory.
     image_list = []

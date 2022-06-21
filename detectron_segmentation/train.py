@@ -25,8 +25,8 @@ def get_data_dicts(directory, classes):
         filename = os.path.join(directory, img_anns["imagePath"])
 
         record["file_name"] = filename
-        record["height"] = 2752
-        record["width"] = 2208
+        record["height"] = 2208
+        record["width"] = 2752
 
         annos = img_anns["shapes"]
         objs = []

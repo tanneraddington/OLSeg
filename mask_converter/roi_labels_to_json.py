@@ -90,17 +90,28 @@ class Cell_Mask():
         :return:
         '''
         sorted = []
-        even = []
-        odd = []
-        prev_vertex = list_of_pos[0]
-        for index in range(0,len(list_of_pos)):
-            if(index % 2 == 0):
-                even.append(list_of_pos[index])
-            else:
-                odd.append(list_of_pos[index])
-            prev_vertex = list_of_pos[index]
+        # even = []
+        # odd = []
+        # prev_vertex = list_of_pos[0]
+        # for index in range(0,len(list_of_pos)):
+        #     if(list_of_pos[index].dist_from_center([prev_vertex.xpos, prev_vertex.ypos]) > 2.0):
+        #         continue
+        #     sorted.append(list_of_pos[index])
+        #     prev_vertex = list_of_pos[index]
 
-        sorted = odd.append(even)
+        index = 0
+        prev_vertex = list_of_pos[0]
+        while len(sorted) < len(list_of_pos):
+            index = index % len(list_of_pos)
+            if (list_of_pos[index].dist_from_center([prev_vertex.xpos, prev_vertex.ypos]) > 3.0 or list_of_pos[index].visited):
+                continue
+            list_of_pos[index].visited = True
+            list_of_pos[index] = list_of_pos[index]
+            sorted.append(list_of_pos[index])
+            prev_vertex = list_of_pos[index]
+            print(index)
+            index = index + 1
+
         return  sorted
 
 
@@ -117,7 +128,7 @@ class Cell_Mask():
             list_of_pos.append(point)
             # prev_pos = (self.yposes[index], self.xposes[index])
 
-        # list_of_pos = self.sort_points(list_of_pos)
+        list_of_pos = self.sort_points(list_of_pos)
         x_y = []
         for vertex in list_of_pos:
             x_y.append((vertex.xpos, vertex.ypos))

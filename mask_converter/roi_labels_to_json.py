@@ -3,6 +3,8 @@ import math
 import cv2, os
 import json
 
+
+
 class Cell_Mask():
     '''
        This is the cell  mask class. It will contain a label, a bounding box,
@@ -28,6 +30,7 @@ class Cell_Mask():
         self.cell_num = -1
         self.area = 0
         self.marked = False
+        self.center = 0
 
     def calculate_bb(self):
         # make sure this does not ex
@@ -79,18 +82,45 @@ class Cell_Mask():
     def dist(self, points1, points2):
         return math.sqrt((points1[0] - points2[0])**2 + (points1[1] - points2[1])**2)
 
+    def sort_points(self,list_of_pos):
+        '''
+        This method will sort the values such that it will be able to
+        properly sort to get rid of triangles
+        :param list_of_pos:
+        :return:
+        '''
+        sorted = []
+        even = []
+        odd = []
+        prev_vertex = list_of_pos[0]
+        for index in range(0,len(list_of_pos)):
+            if(index % 2 == 0):
+                even.append(list_of_pos[index])
+            else:
+                odd.append(list_of_pos[index])
+            prev_vertex = list_of_pos[index]
+
+        sorted = odd.append(even)
+        return  sorted
+
+
     def create_json_dict(self):
+        '''
+        This method creates the json dictionary
+        :return:
+        '''
         json_dict = dict()
-        list_of_pos = [None] * len(self.xposes)
-        prev_pos = (self.yposes[0], self.xposes[0])
+        list_of_pos = []
+        # prev_pos = (self.yposes[0], self.xposes[0])
         for index in range(0, len(self.xposes)):
-            point = (self.yposes[index], self.xposes[index])
-            distance = self.dist(prev_pos, point)
-            # if distance < 2.0:
-            #     list_of_pos[index] = point
-            list_of_pos[index] = point
-            prev_pos = (self.yposes[index], self.xposes[index])
-        x_y = list_of_pos
+            point = Vertex(self.yposes[index], self.xposes[index])
+            list_of_pos.append(point)
+            # prev_pos = (self.yposes[index], self.xposes[index])
+
+        # list_of_pos = self.sort_points(list_of_pos)
+        x_y = []
+        for vertex in list_of_pos:
+            x_y.append((vertex.xpos, vertex.ypos))
         json_dict["points"] = x_y
         json_dict["label"] = self.label
 
@@ -113,6 +143,7 @@ class Vertex():
         self.edges = set()
         self.marked = False
         self.visited = False
+        self.center_dist = self.dist_from_center([0,0])
 
     def add_edge(self, vertex):
         '''
@@ -121,6 +152,11 @@ class Vertex():
         :return:
         '''
         self.edges.add(vertex)
+
+    def dist_from_center(self, center):
+        return math.sqrt((self.xpos - center[0]) ** 2 + (self.ypos - center[1]) ** 2)
+
+
 
 
 
@@ -206,6 +242,7 @@ def dfs(start_vertex, point_dict):
     bag = []
     start_key = str(start_vertex.xpos) + ":" + str(start_vertex.ypos)
     bag.append(start_key)
+    prev_key = start_key
     while (len(bag) > 0):
         # remove from bag
         vertex_key = bag.pop()
@@ -218,6 +255,8 @@ def dfs(start_vertex, point_dict):
             # loop through each of the edges
             for edge in point_dict[vertex_key].edges:
                 edge_key = str(edge.xpos) + ":" + str(edge.ypos)
+                if point_dict[edge_key].visited:
+                    continue
                 bag.append(edge_key)
 
     return cur_mask, point_dict

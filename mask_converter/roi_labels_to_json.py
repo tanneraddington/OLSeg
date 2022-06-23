@@ -110,12 +110,9 @@ class Cell_Mask():
         '''
         json_dict = dict()
         list_of_pos = []
-        # prev_pos = (self.yposes[0], self.xposes[0])
         for index in range(0, len(self.xposes)):
             point = Vertex(self.yposes[index], self.xposes[index])
             list_of_pos.append(point)
-            # prev_pos = (self.yposes[index], self.xposes[index])
-
         list_of_pos = self.sort_points(list_of_pos)
         x_y = []
         for vertex in list_of_pos:

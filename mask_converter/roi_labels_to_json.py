@@ -8,7 +8,7 @@ import json
 class Cell_Mask():
     '''
        This is the cell  mask class. It will contain a label, a bounding box,
-       and all of the xy postions of the mask
+       and all the xy positions of the mask
        '''
 
     def __init__(self, label = "Cell"):
@@ -69,8 +69,6 @@ class Cell_Mask():
         ypos = list(self.yposes)
         print(xpos)
         print(ypos)
-        # for index in range(0, len(xpos)):
-        #     print(str(xpos[index]) + ":" + str(ypos[index]))
         print("Label:" + self.label)
         print("Bounding Box:" + str(self.bounding_box))
         print("YMIN: " + str(self.xmin))
@@ -79,8 +77,6 @@ class Cell_Mask():
         print("XMAX: " + str(self.ymax))
         print("AREA: " + str(self.area))
 
-    def dist(self, points1, points2):
-        return math.sqrt((points1[0] - points2[0])**2 + (points1[1] - points2[1])**2)
 
     def sort_points(self,list_of_pos):
         '''
@@ -90,14 +86,6 @@ class Cell_Mask():
         :return:
         '''
         sorted = []
-        # even = []
-        # odd = []
-        # prev_vertex = list_of_pos[0]
-        # for index in range(0,len(list_of_pos)):
-        #     if(list_of_pos[index].dist_from_center([prev_vertex.xpos, prev_vertex.ypos]) > 2.0):
-        #         continue
-        #     sorted.append(list_of_pos[index])
-        #     prev_vertex = list_of_pos[index]
 
         index = 0
         prev_vertex = list_of_pos[0]
@@ -165,6 +153,11 @@ class Vertex():
         self.edges.add(vertex)
 
     def dist_from_center(self, center):
+        '''
+        This method will find the distance between this vertex and another vertex
+        :param center:
+        :return:
+        '''
         return math.sqrt((self.xpos - center[0]) ** 2 + (self.ypos - center[1]) ** 2)
 
 

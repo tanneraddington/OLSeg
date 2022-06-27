@@ -105,8 +105,12 @@ class Cell_Mask():
         sorted = sorted + sections[0]
         all_sections.remove(0)
         reversed = False
-        while len(sorted) < len(list_of_pos) or len(all_sections) > 0:
+        while len(all_sections) > 0:
             first_section = all_sections[0]
+            if(len(sections[first_section]) < 3):
+                all_sections.remove(first_section)
+                continue
+
             shortest_dist = sorted[-1].dist_from_center([sections[first_section][0].xpos, sections[first_section][0].ypos])
             shortest_sec = first_section
             for sec in all_sections:

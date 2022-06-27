@@ -133,6 +133,32 @@ class Cell_Mask():
             all_sections.remove(shortest_sec)
         return sorted
 
+    def sort_points(self,list_of_pos):
+        '''
+        This method will sort the values such that it will be able to
+        properly sort to get rid of triangles
+        :param list_of_pos:
+        :return:
+        '''
+        self.sections(list_of_pos)
+        sorted = []
+
+        index = 0
+        prev_vertex = list_of_pos[0]
+        while len(sorted) < len(list_of_pos):
+            index = index % len(list_of_pos)
+            if (list_of_pos[index].dist_from_center([prev_vertex.xpos, prev_vertex.ypos]) > 3.0):
+                print("DISTANCE: "+str(list_of_pos[index].dist_from_center([prev_vertex.xpos, prev_vertex.ypos])))
+                print("POINTS" + str(prev_vertex.xpos) + " " + str(prev_vertex.ypos))
+            list_of_pos[index].visited = True
+            list_of_pos[index] = list_of_pos[index]
+            sorted.append(list_of_pos[index])
+            prev_vertex = list_of_pos[index]
+            index = index + 1
+
+        return  sorted
+
+
     def create_json_dict(self):
         '''
         This method creates the json dictionary
@@ -143,10 +169,11 @@ class Cell_Mask():
         for index in range(0, len(self.xposes)):
             point = Vertex(self.yposes[index], self.xposes[index])
             list_of_pos.append(point)
-        list_of_pos = self.sections(list_of_pos)
+        # list_of_pos = self.sections(list_of_pos)
         x_y = []
         for vertex in list_of_pos:
             x_y.append((vertex.xpos, vertex.ypos))
+        x_y.reverse()
         json_dict["points"] = x_y
         json_dict["label"] = self.label
 
@@ -200,21 +227,26 @@ def is_interest_point(image, i, j):
     :return:
     '''
     if image[i][j] == 0:
-        if(image[i][j - 1] == 255 or image[i][j + 1] == 255 or image[i + 1][j] == 255 or image[i - 1][j] == 255):
-            return True
+        for x in range(i - 1, i + 2):
+            for y in range(j - 1, j + 2):
+                if i == x and j == y:
+                    continue
+                if image[x][y] == 255:
+                   return True
     else:
         return False
 
-def find_edges(image, i, j , point_dict):
+def find_edges(image, i_ind, j_ind , point_dict):
     '''
     This method finds creates an edge for each connected edge pixel
     :param image:
     :param vertex:
     :return:
     '''
-    vertex = Vertex(i, j)
+    vertex = Vertex(i_ind, j_ind)
     x = vertex.xpos
     y = vertex.ypos
+
     for i in range(x-1, x+2):
         for j in range(y-1, y+2):
             if i == x and j == y:

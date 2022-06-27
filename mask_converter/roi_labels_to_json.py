@@ -104,12 +104,18 @@ class Cell_Mask():
         # start at 0
         sorted = sorted + sections[0]
         all_sections.remove(0)
-        while len(sorted) < len(list_of_pos):
+        while len(sorted) < len(list_of_pos) or len(all_sections) > 0:
+            first_section = all_sections[0]
+            shortest_dist = sorted[-1].dist_from_center([sections[first_section][0].xpos, sections[first_section][0].ypos])
+            shortest_sec = first_section
             for sec in all_sections:
-                if sorted[-1].dist_from_center([sections[sec][0].xpos, sections[sec][0].ypos]) < 2.1:
-                    sorted = sorted + sections[sec]
-                    all_sections.remove(sec)
-                    continue
+                distance = sorted[-1].dist_from_center([sections[sec][0].xpos, sections[sec][0].ypos])
+                if distance < shortest_dist:
+                    shortest_dist = distance
+                    shortest_sec = sec
+
+            sorted = sorted + sections[shortest_sec]
+            all_sections.remove(shortest_sec)
         return sorted
 
     def sort_points(self,list_of_pos):

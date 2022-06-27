@@ -106,10 +106,10 @@ class Cell_Mask():
         all_sections.remove(0)
         while len(sorted) < len(list_of_pos):
             for sec in all_sections:
-                if sorted[-1].dist_from_center(sections[sec][0]) < 2.1:
+                if sorted[-1].dist_from_center([sections[sec][0].xpos, sections[sec][0].ypos]) < 2.1:
                     sorted = sorted + sections[sec]
                     all_sections.remove(sec)
-                    break
+                    continue
         return sorted
 
     def sort_points(self,list_of_pos):

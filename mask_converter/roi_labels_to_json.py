@@ -77,6 +77,40 @@ class Cell_Mask():
         print("XMAX: " + str(self.ymax))
         print("AREA: " + str(self.area))
 
+    def sections(self,list_of_pos):
+        # this will be a dictionary of lists
+        sections = dict()
+        section = 0
+
+        prev_vertex = list_of_pos[0]
+        sections[0] = []
+        sections[0].append(list_of_pos[0])
+        # loop through each finding the sections
+        for index in range(0, len(list_of_pos)):
+            if (list_of_pos[index].dist_from_center([prev_vertex.xpos, prev_vertex.ypos]) > 2.0):
+                section = section + 1
+                sections[section] = []
+                sections[section].append(list_of_pos[index])
+            sections[section].append(list_of_pos[index])
+            prev_vertex = list_of_pos[index]
+        print("SECTION:" + str(section))
+
+        all_sections = []
+        for i in range(0, section + 1):
+            all_sections.append(i)
+        # loop through each section until we find each
+        sorted = []
+
+        # start at 0
+        sorted = sorted + sections[0]
+        all_sections.remove(0)
+        while len(sorted) < len(list_of_pos):
+            for sec in all_sections:
+                if sorted[-1].dist_from_center(sections[sec][0]) < 2.1:
+                    sorted = sorted + sections[sec]
+                    all_sections.remove(sec)
+                    break
+        return sorted
 
     def sort_points(self,list_of_pos):
         '''
@@ -85,19 +119,20 @@ class Cell_Mask():
         :param list_of_pos:
         :return:
         '''
+        self.sections(list_of_pos)
         sorted = []
 
         index = 0
         prev_vertex = list_of_pos[0]
         while len(sorted) < len(list_of_pos):
             index = index % len(list_of_pos)
-            if (list_of_pos[index].dist_from_center([prev_vertex.xpos, prev_vertex.ypos]) > 3.0 or list_of_pos[index].visited):
-                continue
+            # if (list_of_pos[index].dist_from_center([prev_vertex.xpos, prev_vertex.ypos]) > 3.0 or list_of_pos[index].visited):
+            #     print("DISTANCE: "+str(list_of_pos[index].dist_from_center([prev_vertex.xpos, prev_vertex.ypos])))
+            #     print("POINTS" + str(prev_vertex.xpos) + str(prev_vertex.ypos))
             list_of_pos[index].visited = True
             list_of_pos[index] = list_of_pos[index]
             sorted.append(list_of_pos[index])
             prev_vertex = list_of_pos[index]
-            print(index)
             index = index + 1
 
         return  sorted
@@ -113,7 +148,8 @@ class Cell_Mask():
         for index in range(0, len(self.xposes)):
             point = Vertex(self.yposes[index], self.xposes[index])
             list_of_pos.append(point)
-        list_of_pos = self.sort_points(list_of_pos)
+        list_of_pos = self.sections(list_of_pos)
+
         x_y = []
         for vertex in list_of_pos:
             x_y.append((vertex.xpos, vertex.ypos))

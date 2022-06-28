@@ -147,6 +147,7 @@ class Cell_Mask():
         x_y = []
         for vertex in list_of_pos:
             x_y.append((vertex.xpos, vertex.ypos))
+
         json_dict["points"] = x_y
         json_dict["label"] = self.label
 
@@ -361,6 +362,8 @@ def label_image(image, labels):
     shapes = []
     for mask in cell_list:
         mask_dict = mask.create_json_dict()
+        if len(mask_dict["points"]) < 5:
+            continue
         shapes.append(mask_dict)
     cell_dict["shapes"] = shapes
     return cell_dict
@@ -415,7 +418,7 @@ def main():
     # num_vals = input()
 
     ### CHANGE DIR PATH HERE ###
-    dir_path = "/Users/tannerwatts/Desktop/OLSeg/detectron_segmentation/train"
+    dir_path = "/Users/tannerwatts/Desktop/OLSeg/detectron_segmentation/test"
 
     # loop through each image in a directory.
     image_list = []

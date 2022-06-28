@@ -16,11 +16,8 @@ def main():
 
     predictor = DefaultPredictor(cfg)
 
-    ### CHANGE IMAGE PATH HERE ####
-    image_path = "/Users/tannerwatts/Desktop/serotonin-segmentation/prediction_imgs/m5_1_6_3(1).jpg"
-
     ### CHANGE DIR PATH HERE ###
-    dir_path = "/Users/tannerwatts/Desktop/serotonin-segmentation/prediction_imgs/"
+    dir_path = "/Users/tannerwatts/Desktop/OLSeg/detectron_segmentation/prediction_imgs"
 
     # loop through each image in a directory.
     image_list = []

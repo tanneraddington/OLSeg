@@ -4,3 +4,4 @@ detectron_segmentation/test/
 detectron_segmentation/train/
 detectron_segmentation/detectron2/
 /detectron_segmentation/CI_cfg.pickle
+/detectron_segmentation/output/

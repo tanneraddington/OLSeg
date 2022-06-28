@@ -140,16 +140,19 @@ class Cell_Mask():
         :param list_of_pos:
         :return:
         '''
-        self.sections(list_of_pos)
         sorted = []
 
         index = 0
         prev_vertex = list_of_pos[0]
         while len(sorted) < len(list_of_pos):
-            index = index % len(list_of_pos)
-            if (list_of_pos[index].dist_from_center([prev_vertex.xpos, prev_vertex.ypos]) > 3.0):
-                print("DISTANCE: "+str(list_of_pos[index].dist_from_center([prev_vertex.xpos, prev_vertex.ypos])))
+            distance = list_of_pos[index].dist_from_center([prev_vertex.xpos, prev_vertex.ypos])
+            if(len(list_of_pos) > 100):
+                print("DISTANCE: " + str(list_of_pos[index].dist_from_center([prev_vertex.xpos, prev_vertex.ypos])))
                 print("POINTS" + str(prev_vertex.xpos) + " " + str(prev_vertex.ypos))
+            if distance > 1.5:
+                index = index + 1
+                continue
+            index = index % len(list_of_pos)
             list_of_pos[index].visited = True
             list_of_pos[index] = list_of_pos[index]
             sorted.append(list_of_pos[index])
@@ -170,6 +173,7 @@ class Cell_Mask():
             point = Vertex(self.yposes[index], self.xposes[index])
             list_of_pos.append(point)
         # list_of_pos = self.sections(list_of_pos)
+        list_of_pos = self.sort_points(list_of_pos)
         x_y = []
         for vertex in list_of_pos:
             x_y.append((vertex.xpos, vertex.ypos))
@@ -229,7 +233,7 @@ def is_interest_point(image, i, j):
     if image[i][j] == 0:
         for x in range(i - 1, i + 2):
             for y in range(j - 1, j + 2):
-                if i == x and j == y:
+                if (i == x and j == y) or (i != x and j != y):
                     continue
                 if image[x][y] == 255:
                    return True
@@ -249,7 +253,7 @@ def find_edges(image, i_ind, j_ind , point_dict):
 
     for i in range(x-1, x+2):
         for j in range(y-1, y+2):
-            if i == x and j == y:
+            if (i == x and j == y):
                 continue
             key = str(i) + ":" + str(j)
             if key in point_dict:
@@ -305,7 +309,7 @@ def dfs(start_vertex, point_dict):
     bag = []
     start_key = str(start_vertex.xpos) + ":" + str(start_vertex.ypos)
     bag.append(start_key)
-    prev_key = start_key
+    first = True
     while (len(bag) > 0):
         # remove from bag
         vertex_key = bag.pop()
@@ -318,8 +322,6 @@ def dfs(start_vertex, point_dict):
             # loop through each of the edges
             for edge in point_dict[vertex_key].edges:
                 edge_key = str(edge.xpos) + ":" + str(edge.ypos)
-                if point_dict[edge_key].visited:
-                    continue
                 bag.append(edge_key)
 
     return cur_mask, point_dict
@@ -447,7 +449,7 @@ def main():
     # num_vals = input()
 
     ### CHANGE DIR PATH HERE ###
-    dir_path = "/Users/tannerwatts/Desktop/OLSeg/detectron_segmentation/test"
+    dir_path = "/Users/tannerwatts/Desktop/OLSeg/detectron_segmentation/train"
 
     # loop through each image in a directory.
     image_list = []

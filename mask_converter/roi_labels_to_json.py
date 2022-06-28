@@ -418,7 +418,7 @@ def main():
     # num_vals = input()
 
     ### CHANGE DIR PATH HERE ###
-    dir_path = "/Users/tannerwatts/Desktop/OLSeg/detectron_segmentation/test"
+    dir_path = "/Users/tannerwatts/Desktop/OLSeg/detectron_segmentation/train"
 
     # loop through each image in a directory.
     image_list = []

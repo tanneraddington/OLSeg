@@ -143,7 +143,6 @@ class Cell_Mask():
         for index in range(0, len(self.xposes)):
             point = Vertex(self.yposes[index], self.xposes[index])
             list_of_pos.append(point)
-        list_of_pos = self.sections(list_of_pos)
         x_y = []
         for vertex in list_of_pos:
             x_y.append((vertex.xpos, vertex.ypos))
@@ -179,6 +178,7 @@ class Vertex():
         :return:
         '''
         self.edges.add(vertex)
+
 
     def dist_from_center(self, center):
         '''
@@ -216,19 +216,51 @@ def find_edges(image, i, j , point_dict):
     vertex = Vertex(i, j)
     x = vertex.xpos
     y = vertex.ypos
-    for i in range(x-1, x+2):
-        for j in range(y-1, y+2):
-            if i == x and j == y:
-                continue
+
+    safe_x = []
+    safe_y = []
+    changes = [-1, 1]
+    for change in changes:
+        if is_interest_point(image, x + change, y):
+            i = x + change
+            j = y
             key = str(i) + ":" + str(j)
-            if key in point_dict:
-                vertex.add_edge(point_dict[key])
-                continue
-            if is_interest_point(image, i,j):
-                iv = Vertex(i,j)
-                point_dict[key] = iv
+            iv = Vertex(i, j)
+            vertex.add_edge(iv)
+            safe_x.append(i)
+            safe_y.append(j)
+        if is_interest_point(image, x, y + change):
+            i = x
+            j = y + change
+            key = str(i) + ":" + str(j)
+            iv = Vertex(i, j)
+            vertex.add_edge(iv)
+            safe_x.append(i)
+            safe_y.append(j)
+
+    if(len(vertex.edges) < 2 ):
+        changes = [-1, 1]
+        for change in changes:
+            if is_interest_point(image, x + change, y + changes[0]):
+                i = x + change
+                j = y + changes[0]
+                if(safe_x.__contains__(i) or safe_y.__contains__(j)):
+                    continue
+                key = str(i) + ":" + str(j)
+                iv = Vertex(i, j)
                 vertex.add_edge(iv)
-    return vertex, point_dict
+
+            if is_interest_point(image, x + change, y + changes[1]):
+                i = x + change
+                j = y + changes[1]
+                if (safe_x.__contains__(i) or safe_y.__contains__(j)):
+                    continue
+                key = str(i) + ":" + str(j)
+                iv = Vertex(i, j)
+                vertex.add_edge(iv)
+
+
+    return vertex
 
 
 def make_graph(image,h,w, point_dict):
@@ -251,11 +283,11 @@ def make_graph(image,h,w, point_dict):
                 if point_dict[key].marked:
                     continue
                 else:
-                    iv, point_dict = find_edges(image, i,j, point_dict)
+                    iv = find_edges(image, i,j, point_dict)
                     iv.marked = True
                     point_dict[key] = iv
-            if is_interest_point(image,i,j):
-                iv, point_dict = find_edges(image, i,j, point_dict)
+            elif is_interest_point(image,i,j):
+                iv = find_edges(image, i,j, point_dict)
                 # after we find the edges mark that we have found the edges
                 iv.marked = True
                 key = str(i) + ":" + str(j)
@@ -274,7 +306,6 @@ def dfs(start_vertex, point_dict):
     bag = []
     start_key = str(start_vertex.xpos) + ":" + str(start_vertex.ypos)
     bag.append(start_key)
-    prev_key = start_key
     while (len(bag) > 0):
         # remove from bag
         vertex_key = bag.pop()
@@ -362,6 +393,7 @@ def label_image(image, labels):
     shapes = []
     for mask in cell_list:
         mask_dict = mask.create_json_dict()
+        # makes sure it is a polygon
         if len(mask_dict["points"]) < 5:
             continue
         shapes.append(mask_dict)

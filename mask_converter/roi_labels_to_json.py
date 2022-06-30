@@ -244,8 +244,6 @@ def find_edges(image, i, j , point_dict):
             if is_interest_point(image, x + change, y + changes[0]):
                 i = x + change
                 j = y + changes[0]
-                if(safe_x.__contains__(i) or safe_y.__contains__(j)):
-                    continue
                 key = str(i) + ":" + str(j)
                 iv = Vertex(i, j)
                 vertex.add_edge(iv)
@@ -253,8 +251,6 @@ def find_edges(image, i, j , point_dict):
             if is_interest_point(image, x + change, y + changes[1]):
                 i = x + change
                 j = y + changes[1]
-                if (safe_x.__contains__(i) or safe_y.__contains__(j)):
-                    continue
                 key = str(i) + ":" + str(j)
                 iv = Vertex(i, j)
                 vertex.add_edge(iv)
@@ -288,6 +284,8 @@ def make_graph(image,h,w, point_dict):
                     point_dict[key] = iv
             elif is_interest_point(image,i,j):
                 iv = find_edges(image, i,j, point_dict)
+                if len(iv.edges) < 2:
+                    continue
                 # after we find the edges mark that we have found the edges
                 iv.marked = True
                 key = str(i) + ":" + str(j)
@@ -318,6 +316,8 @@ def dfs(start_vertex, point_dict):
             # loop through each of the edges
             for edge in point_dict[vertex_key].edges:
                 edge_key = str(edge.xpos) + ":" + str(edge.ypos)
+                if not edge_key in point_dict:
+                    continue
                 if point_dict[edge_key].visited:
                     continue
                 bag.append(edge_key)

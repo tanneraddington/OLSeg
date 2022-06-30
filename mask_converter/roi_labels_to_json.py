@@ -386,6 +386,7 @@ def label_image(image, labels):
     point_dict = dict()
     h = image.shape[0]
     w = image.shape[1]
+    image = pad_graph(image, h, w)
     point_dict = make_graph(image, h, w, point_dict)
     cell_list = find_masks(labels, point_dict)
     cell_dict = dict()
@@ -411,6 +412,20 @@ def tiff_to_png(image_path):
     # threshold the image
     img_binary = cv2.threshold(image, thresh, 255, cv2.THRESH_BINARY)[1]
     return img_binary
+
+
+def pad_graph(image, h , w):
+    # loop through each pixel in the image
+    # we may need to add a white border to the image for this to work perfectly
+    for x in range(2, h - 2):
+        for y in range(2, w - 2):
+            if image[x][y] == 0:
+                if image[x+1][y] == 255 and image[x+2][y] == 0:
+                    image[x + 1][y] = 0
+
+    return image
+
+
 
 def make_json(path, json_pth):
     '''

@@ -316,6 +316,7 @@ def dfs(start_vertex, point_dict):
             # loop through each of the edges
             for edge in point_dict[vertex_key].edges:
                 edge_key = str(edge.xpos) + ":" + str(edge.ypos)
+                # we need to replace edges so that this works.
                 if not edge_key in point_dict:
                     continue
                 if point_dict[edge_key].visited:

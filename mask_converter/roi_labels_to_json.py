@@ -284,6 +284,7 @@ def make_graph(image,h,w, point_dict):
                     point_dict[key] = iv
             elif is_interest_point(image,i,j):
                 iv = find_edges(image, i,j, point_dict)
+                # we need add an edge here so every one has 2.
                 if len(iv.edges) < 2:
                     continue
                 # after we find the edges mark that we have found the edges

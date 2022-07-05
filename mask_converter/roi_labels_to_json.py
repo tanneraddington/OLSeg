@@ -238,22 +238,19 @@ def find_edges(image, i, j , point_dict):
             safe_x.append(i)
             safe_y.append(j)
 
-    if(len(vertex.edges) < 2 ):
-        changes = [-1, 1]
-        for change in changes:
-            if is_interest_point(image, x + change, y + changes[0]):
-                i = x + change
-                j = y + changes[0]
-                key = str(i) + ":" + str(j)
-                iv = Vertex(i, j)
-                vertex.add_edge(iv)
-
-            if is_interest_point(image, x + change, y + changes[1]):
-                i = x + change
-                j = y + changes[1]
-                key = str(i) + ":" + str(j)
-                iv = Vertex(i, j)
-                vertex.add_edge(iv)
+    changes = [-1, 1]
+    for change in changes:
+        if is_interest_point(image, x + change, y + changes[0]):
+            i = x + change
+            j = y + changes[0]
+            iv = Vertex(i, j)
+            vertex.add_edge(iv)
+        if is_interest_point(image, x + change, y + changes[1]):
+            i = x + change
+            j = y + changes[1]
+            key = str(i) + ":" + str(j)
+            iv = Vertex(i, j)
+            vertex.add_edge(iv)
 
 
     return vertex
@@ -284,9 +281,6 @@ def make_graph(image,h,w, point_dict):
                     point_dict[key] = iv
             elif is_interest_point(image,i,j):
                 iv = find_edges(image, i,j, point_dict)
-                # we need add an edge here so every one has 2.
-                if len(iv.edges) < 2:
-                    continue
                 # after we find the edges mark that we have found the edges
                 iv.marked = True
                 key = str(i) + ":" + str(j)
@@ -317,9 +311,6 @@ def dfs(start_vertex, point_dict):
             # loop through each of the edges
             for edge in point_dict[vertex_key].edges:
                 edge_key = str(edge.xpos) + ":" + str(edge.ypos)
-                # we need to replace edges so that this works.
-                if not edge_key in point_dict:
-                    continue
                 if point_dict[edge_key].visited:
                     continue
                 bag.append(edge_key)
@@ -388,11 +379,9 @@ def label_image(image, labels):
     point_dict = dict()
     h = image.shape[0]
     w = image.shape[1]
-    image = pad_graph(image, h, w)
     point_dict = make_graph(image, h, w, point_dict)
     cell_list = find_masks(labels, point_dict)
     cell_dict = dict()
-    index = 0
     shapes = []
     for mask in cell_list:
         mask_dict = mask.create_json_dict()
@@ -414,19 +403,6 @@ def tiff_to_png(image_path):
     # threshold the image
     img_binary = cv2.threshold(image, thresh, 255, cv2.THRESH_BINARY)[1]
     return img_binary
-
-
-def pad_graph(image, h , w):
-    # loop through each pixel in the image
-    # we may need to add a white border to the image for this to work perfectly
-    for x in range(2, h - 2):
-        for y in range(2, w - 2):
-            if image[x][y] == 0:
-                if image[x+1][y] == 255 and image[x+2][y] == 0:
-                    image[x + 1][y] = 0
-
-    return image
-
 
 
 def make_json(path, json_pth):

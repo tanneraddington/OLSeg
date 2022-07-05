@@ -78,7 +78,7 @@ def train(user_path):
     microcontroller_metadata = MetadataCatalog.get(train_dataset_name)
 
     # verify dataset
-    plot_samples(dataset_name="cells_train", n=1)
+    plot_samples(dataset_name="cells_train", n=2)
     cfg = get_train_cfg(config_file_path, checkpoint_url, train_dataset_name, test_dataset_name, num_classes, device, output_dir)
     with open(cfg_save_path, 'wb') as f:
         pickle.dump(cfg,f,protocol=pickle.HIGHEST_PROTOCOL)

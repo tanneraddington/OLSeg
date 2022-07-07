@@ -294,6 +294,7 @@ def dfs(start_vertex, point_dict):
     :param start_vertex:
     :return:
     '''
+    # try to indroduce relation trees here. perhaps trees do the trick.
     # add the spot to the bag
     cur_mask = Cell_Mask()
     bag = []

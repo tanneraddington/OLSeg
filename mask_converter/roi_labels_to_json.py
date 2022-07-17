@@ -300,6 +300,8 @@ def dfs(start_vertex, point_dict):
     bag = []
     start_key = str(start_vertex.xpos) + ":" + str(start_vertex.ypos)
     bag.append(start_key)
+    first = True
+    end_key = ""
     while (len(bag) > 0):
         # remove from bag
         vertex_key = bag.pop()
@@ -312,6 +314,14 @@ def dfs(start_vertex, point_dict):
             # loop through each of the edges
             for edge in point_dict[vertex_key].edges:
                 edge_key = str(edge.xpos) + ":" + str(edge.ypos)
+                # hopefully this will stop early.
+                if edge_key == end_key:
+                    cur_mask.xposes.append(point_dict[end_key].xpos)
+                    cur_mask.yposes.append(point_dict[end_key].ypos)
+                    return cur_mask, point_dict
+                if first:
+                    end_key = edge_key
+                    first = False
                 if point_dict[edge_key].visited:
                     continue
                 bag.append(edge_key)

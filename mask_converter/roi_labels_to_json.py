@@ -18,6 +18,7 @@ class Cell_Mask():
         :param ypos: pixel location
         :param edges: what vertecies it connects to
         '''
+        self.verticies = []
         self.xposes = []
         self.yposes = []
         self.xmax = -1
@@ -140,15 +141,27 @@ class Cell_Mask():
         '''
         json_dict = dict()
         list_of_pos = []
+        prev_point = Vertex(self.yposes[0], self.xposes[0])
+        jump_point = len(self.xposes)
+        jump_found = False
         for index in range(0, len(self.xposes)):
+            # find the first jump and then use that as a stopping point.
             point = Vertex(self.yposes[index], self.xposes[index])
+            print(prev_point.distance(point))
+            if prev_point.distance(point) > 20.0:
+                if not jump_found:
+                    jump_point = index
+                    jump_found = True
+            prev_point = point
             list_of_pos.append(point)
         x_y = []
-        for vertex in list_of_pos:
+        for index in range(0,jump_point):
+            vertex = list_of_pos[index]
             x_y.append((vertex.xpos, vertex.ypos))
 
         json_dict["points"] = x_y
         json_dict["label"] = self.label
+        json_dict["cell number"] = self.cell_num
 
         # look at best way to make this json
         return json_dict
@@ -179,6 +192,13 @@ class Vertex():
         '''
         self.edges.add(vertex)
 
+    def distance(self, vertex):
+        '''
+        This method will find the distance between this vertex and another vertex
+        :param center:
+        :return:
+        '''
+        return math.sqrt((self.xpos - vertex.xpos) ** 2 + (self.ypos - vertex.ypos) ** 2)
 
     def dist_from_center(self, center):
         '''
@@ -318,7 +338,7 @@ def dfs(start_vertex, point_dict):
                 if edge_key == end_key:
                     cur_mask.xposes.append(point_dict[end_key].xpos)
                     cur_mask.yposes.append(point_dict[end_key].ypos)
-                    return cur_mask, point_dict
+                    return cur_mask, point_dict, True
                 if first:
                     end_key = edge_key
                     first = False
@@ -326,7 +346,7 @@ def dfs(start_vertex, point_dict):
                     continue
                 bag.append(edge_key)
 
-    return cur_mask, point_dict
+    return cur_mask, point_dict, False
 
 def find_masks(labels, point_dict):
     '''
@@ -339,19 +359,25 @@ def find_masks(labels, point_dict):
     for key in point_dict.keys():
         vertex = point_dict[key]
         if not vertex.visited:
-            mask, point_dict = dfs(vertex, point_dict)
+            mask, point_dict_new, should_add = dfs(vertex, point_dict)
+            # if should_add == True:
+            point_dict = point_dict_new
             cur_masks[key_val] = mask
             key_val = key_val + 1
+
+
     masks = []
 
     for key in cur_masks.keys():
         cur_masks[key].calculate_bb()
         cur_masks[key].sum = sum(cur_masks[key].bounding_box)
-        masks.append(cur_masks[key])
+        if cur_masks[key].area > 4:
+            masks.append(cur_masks[key])
 
     masks.sort(key= lambda x:x.area, reverse=False)
 
     final_masks = []
+    cell_num = 0
     # new algo for seeing if boxes are contained
     while(len(masks) > 0):
         top_mask = masks.pop()
@@ -360,14 +386,15 @@ def find_masks(labels, point_dict):
         # check each remaining mask combo to see if it is in the box
         for mask in masks:
             if mask.inside_box(top_mask.xmax, top_mask.ymax, top_mask.xmin, top_mask.ymin):
-                # this will add the wholes. other wise it is ignored.
+                # this will add the holes. other wise it is ignored.
                 ####### CHANGE THIS BACK #######
                 # top_mask.xposes = top_mask.xposes + mask.xposes
                 # top_mask.yposes = top_mask.yposes + mask.yposes
                 mask.label = "Hole"
-                final_masks.append(mask)
+                # final_masks.append(mask)
                 mask.marked = True
-
+        cell_num += 1
+        top_mask.cell_num = cell_num
         top_mask.label = "Cell"
         final_masks.append(top_mask)
 

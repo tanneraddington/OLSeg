@@ -13,6 +13,7 @@ def plot_samples(dataset_name, n=1):
     dataset_custom_metadata = MetadataCatalog.get(dataset_name)
 
     for s in random.sample(dataset_custom, n):
+    # for s in dataset_custom:
         img = cv2.imread(s["file_name"])
         # swap the channels
         v = Visualizer(img[:,:,::-1], metadata = dataset_custom_metadata, scale= 0.5)

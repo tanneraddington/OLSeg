@@ -1,5 +1,5 @@
 import math
-
+import csv
 import cv2, os
 import json
 
@@ -32,6 +32,7 @@ class Cell_Mask():
         self.area = 0
         self.marked = False
         self.center = 0
+        self.name = "Cell"
 
     def calculate_bb(self):
         # make sure this does not ex
@@ -147,7 +148,7 @@ class Cell_Mask():
         for index in range(0, len(self.xposes)):
             # find the first jump and then use that as a stopping point.
             point = Vertex(self.yposes[index], self.xposes[index])
-            print(prev_point.distance(point))
+            # print(prev_point.distance(point))
             if prev_point.distance(point) > 20.0:
                 if not jump_found:
                     jump_point = index
@@ -398,6 +399,7 @@ def find_masks(labels, point_dict):
         top_mask.label = "Cell"
         final_masks.append(top_mask)
 
+    final_masks.sort(key=lambda x: list(x.bounding_box)[0], reverse=False)
     print("ORIG")
     for mask in final_masks:
         mask.print_mask()
@@ -475,6 +477,17 @@ def main():
     The main method takes user input for image path, and saves the json image in the same folder.
     :return:
     '''
+
+    # parse csv and create csv dictionary.
+    with open("/Users/tannerwatts/Desktop/OLSeg/mask_converter/bounding_box_labels.csv") as file:
+        heading = next(file)
+
+        reader = csv.reader(file)
+        label_dict = dict()
+        for row in reader:
+            label_dict[row[0]] = row[1:]
+
+    print(label_dict)
 
     # get the path to the data
     # print("Batch or One Image?")

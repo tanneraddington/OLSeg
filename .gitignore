@@ -7,3 +7,4 @@ detectron_segmentation/detectron2/
 /detectron_segmentation/output/
 /detectron_segmentation/train_backup/
 /detectron_segmentation/detectron2/
+/mask_converter/bounding_box_labels.csv

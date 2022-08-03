@@ -401,7 +401,11 @@ def find_masks(labels, point_dict):
 
     final_masks.sort(key=lambda x: list(x.bounding_box)[0], reverse=False)
     print("ORIG")
+    index = 0
     for mask in final_masks:
+        if not index >= len(labels):
+            mask.label = labels[index]
+            index = index + 1
         mask.print_mask()
 
     return final_masks
@@ -445,7 +449,7 @@ def tiff_to_png(image_path):
     return img_binary
 
 
-def make_json(path, json_pth):
+def make_json(path, json_pth, labels):
     '''
     This method creates json for 1 image. It is used in main to create for batches as well.
     :param path:
@@ -459,7 +463,6 @@ def make_json(path, json_pth):
     # cell_count = int(input())
 
     # print("left to right top to bottom cell labels:")
-    labels = []
     # for cell in range(0,cell_count):
     #     print("cell #" + str(cell) + ":")
     #     labels.append(input())
@@ -485,7 +488,11 @@ def main():
         reader = csv.reader(file)
         label_dict = dict()
         for row in reader:
-            label_dict[row[0]] = row[1:]
+            label_dict[row[0] + "_mask.tif"] = row[1:]
+
+    print(label_dict)
+    for key in label_dict.keys():
+        label_dict[key] = ' '.join(label_dict[key]).split()
 
     print(label_dict)
 
@@ -504,9 +511,13 @@ def main():
         if image_pth.__contains__('mask') and not image_pth.__contains__('.json'):
             print("IMAGE #: " + str(index))
             print(filename)
+            if filename in label_dict.keys():
+                labels = label_dict[filename]
+            else:
+                labels = []
             image_name = filename.replace('.tif','.json')
             json_pth = os.path.join(dir_path, image_name)
-            make_json(image_pth,json_pth)
+            make_json(image_pth,json_pth, labels)
             index = index + 1
 
 

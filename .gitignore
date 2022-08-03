@@ -5,6 +5,7 @@ detectron_segmentation/train/
 detectron_segmentation/detectron2/
 /detectron_segmentation/CI_cfg.pickle
 /detectron_segmentation/output/
-/detectron_segmentation/train_backup/
+/detectron_segmentation/data/
 /detectron_segmentation/detectron2/
 /mask_converter/bounding_box_labels.csv
+/detectron_segmentation/data/

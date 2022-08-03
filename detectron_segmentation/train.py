@@ -55,8 +55,8 @@ def train(user_path):
     checkpoint_url = "COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml"
 
     output_dir = "./output/instance_seg"
-    num_classes = 2
-    classes = ['Cell', 'Hole']
+    num_classes = 4
+    classes = ['opc', 'arborized', 'partial', 'ring']
     train_dataset_name = "cells_train"
     test_dataset_name = "cells_test"
     device = "cpu"
